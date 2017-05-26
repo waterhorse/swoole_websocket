@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>李四</title>
+    <script src="jquery-3.1.1.min.js"></script>
+    <script>
+        // 创建一个Socket实例，ip:swoole_websocket监听端口
+        var socket = new WebSocket('ws://10.255.255.34:9999');
+
+        // 打开Socket
+        socket.onopen = function(event) {
+            // 发送一个初始化消息,刚进入聊天页面向swoole发送一个连接动作告诉swoole自己已经上线
+            var receiver  = $("#choice").val();
+            socket.send(JSON.stringify({
+                id: "3",            //自身的id
+                do:"connect",       //上线的动作
+                toUser:receiver     //要发给的用户id
+            }));
+        };
+
+
+        // 监听消息
+        socket.onmessage = function(event) {
+            //event.data即是websocket_swoole发回的消息
+            var obj = jQuery.parseJSON(event.data);
+            alert(obj.Msg);
+        };
+
+        // 监听Socket的关闭
+        // 关闭Socket....
+        socket.onclose = function(event) {
+            console.log('Client notified socket has closed',event);
+        };
+
+        //发送消息
+        function send(){
+            var message = $("#message").val();
+            var receiver  = $("#choice").val();
+            //socket.send发送消息,JSON.stringify将对象转换成json串
+            socket.send(JSON.stringify({
+                id: "3",            //自身id
+                do: "send",         //发送消息的动作
+                toUser:receiver,    //要发给的用户id
+                msg:message         //发送的消息
+            }));
+        }
+
+        //模拟切换聊天框,更换接收人则告诉swoole对话更换
+        function change(){
+            var receiver  = $("#choice").val();
+            socket.send(JSON.stringify({
+                id: "3",            //自身id
+                do: "changeToUser", //更换聊天对象的动作
+                toUser:receiver     //要发给的用户id
+            }));
+        }
+    </script>
+</head>
+<body>
+<input type="text" id="message">
+
+接收人:
+<select  id="choice">
+    <option value="1">隔壁老王</option>
+    <option value="2">张三</option>
+</select>
+<button onclick="send()">发送</button>
+</body>
+</html>
